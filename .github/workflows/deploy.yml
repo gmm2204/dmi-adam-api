@@ -1,0 +1,32 @@
+name: Deploy Integrated dashboard API
+on:
+  push:
+    branches: [ main ]
+jobs:
+
+  build:
+    name: Deploy API Updates
+    runs-on: ubuntu-latest
+    steps:
+    - name: updating and deploying API
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.PRIVATE_KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          sudo cp -rf  /var/lib/API/dmi-integrated-api/* /tmp/dmi-integrated-dashboards-api-backup/
+          cd /var/lib/github_workflows/dmi-integrated-api
+          sudo git switch main
+          sudo rm -rf build
+          sudo git stash
+          sudo git pull
+          sudo mkdir src/config
+          sudo cp -rf /var/lib/API/config/* src/config/
+          sudo npm install
+          sudo cp -rf . /var/lib/API/dmi-integrated-api/
+          cd /var/lib/API/dmi-integrated-api/
+          sudo npm run start
+          sudo pm2 reload all --update-env
+          echo "Integrated API is upto date"
