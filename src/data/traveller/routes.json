@@ -1,0 +1,20 @@
+{
+    "routes": [
+        {
+            "title": "Create instance",
+            "url": "/create"
+        },
+        {
+            "title": "Update instance",
+            "url": "/update"
+        },
+        {
+            "title": "Acquire instance",
+            "url": "/acquire/instance"
+        },
+        {
+            "title": "Acquire composite",
+            "url": "/acquire/composite"
+        }
+    ]
+}
