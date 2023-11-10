@@ -15,6 +15,28 @@
         {
             "title": "Acquire composite",
             "url": "/acquire/composite"
+        },
+
+        {
+            "title": "Create checkup",
+            "url": "/create-checkup"
+        },
+        {
+            "title": "Checkup instance",
+            "url": "/checkup/instance"
+        },
+        {
+            "title": "Update Checkup",
+            "url": "/update-checkup"
+        },
+
+        {
+            "title": "Create followup",
+            "url": "/create-followup"
+        },
+        {
+            "title": "Followup Instance",
+            "url": "/get-followup"
         }
     ]
 }
