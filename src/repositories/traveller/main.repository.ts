@@ -7,6 +7,7 @@ import { Traveller } from "../../models/traveller/Traveller.model";
 import { IDRoute } from "../../models/IDRoute.model";
 import * as fs from 'fs';
 import * as path from 'path';
+import {TravellerCheckUp} from "../../models/checkup/Checkup.model";
 
 interface IMainRepository {
     readPostData(req: Request): Promise<any[]>;
@@ -20,6 +21,8 @@ class MainRepository implements IMainRepository {
         let url = req.url;
         let TargetRoute: IDRoute = new IDRoute("", "");
         let TravellerInstance = new Traveller(req.body["_id"], req.body["_identity_type"], req.body["_identity_number"], req.body["doc"]);
+        let CheckupInstance = new TravellerCheckUp(req.body["_id"], req.body["_traveller_id"], req.body["doc"]);
+
 
         //#region Seek target route
         for (let i = 0; i < RoutesData.routes.length; i++) {
@@ -44,6 +47,23 @@ class MainRepository implements IMainRepository {
 
             case "/acquire/composite":
                 return await this.acquireComposite(TargetRoute);
+
+            // checkup
+            case "/checkup/instance":
+                return await this.getCheckup(TargetRoute, CheckupInstance);
+
+            case "/create-checkup":
+                return await this.createCheckup(TargetRoute, CheckupInstance);
+
+            case "/update-checkup":
+                return await this.updateCheckup(TargetRoute, CheckupInstance);
+
+            //followup
+            case "/create-followup":
+                return await this.createFollowup(TargetRoute, CheckupInstance);
+
+            case "/get-followup":
+                return await this.getFollowup(TargetRoute, CheckupInstance);
 
             default:
                 return await this.executeQuery(TargetRoute);
@@ -130,6 +150,158 @@ class MainRepository implements IMainRepository {
         try {
             this.retrievedData = await this.db.sequelize?.query(
                 `SELECT * FROM "public"."travellers";`
+            );
+        } catch (error) {
+            this.retrievedData = [{
+                "message": "Error --> " + RouteInstance.url + " --> " + error
+            }];
+        }
+
+        return this.retrievedData[0];
+    }
+
+    async createCheckup(RouteInstance: IDRoute, CheckupInstance: TravellerCheckUp): Promise<any[]> {
+        if (CheckupInstance._traveller_id != "") {
+            try {
+
+                console.log(CheckupInstance._traveller_id)
+                // check if user exists
+                const traveller: any = await this.db.sequelize?.query(
+                    `SELECT * FROM "public"."travellers" WHERE "_id" = :travellerId;`,
+                    {
+                        replacements: { travellerId: CheckupInstance._traveller_id },
+                        type: QueryTypes.SELECT,
+                    }
+                );
+
+                if (traveller && traveller.length === 0) {
+                    this.retrievedData = [{
+                        "result": -1,
+                        "message": "Traveller not found"
+                    }];
+                } else {
+                    this.retrievedData = await this.db.sequelize?.query(
+                        `INSERT INTO public.traveller_check_ups
+                    (_traveller_Id, doc) VALUES
+                    ('${CheckupInstance._traveller_id}', '${JSON.stringify(CheckupInstance.doc)}')
+                    RETURNING _id;`
+                    );
+
+                    const insertedId = this.retrievedData[0][0]._id;
+                    this.retrievedData[0] = {
+                        result: insertedId,
+                    };
+
+                    console.log("-->", this.retrievedData);
+                }
+            } catch (error) {
+                this.retrievedData = [{
+                    "result": -1,
+                    "message": "Error --> " + RouteInstance.url + " --> " + error
+                }];
+            }
+        } else {
+            this.retrievedData = [{
+                "result": -1,
+                "message": "Error --> Blank data"
+            }];
+        }
+
+        return this.retrievedData;
+    }
+
+    async getCheckup(RouteInstance: IDRoute, CheckupInstance: TravellerCheckUp): Promise<any[]> {
+        try {
+            this.retrievedData = await this.db.sequelize?.query(
+                `SELECT * FROM "public"."traveller_check_ups"
+                WHERE "_traveller_id" = ` + CheckupInstance._traveller_id + `;`
+            );
+        } catch (error) {
+            this.retrievedData = [{
+                "message": "Error --> " + RouteInstance.url + " --> " + error
+            }];
+        }
+
+        return this.retrievedData[0];
+    }
+
+    async updateCheckup(RouteInstance: IDRoute, CheckupInstance: TravellerCheckUp): Promise<any[]> {
+        try {
+            this.retrievedData = await this.db.sequelize?.query(
+                `UPDATE public.traveller_check_ups SET doc = '`+ JSON.stringify(CheckupInstance.doc) + `'
+                    WHERE public.traveller_check_ups._traveller_id = `+ CheckupInstance._traveller_id + `;`
+            );
+
+            this.retrievedData[0] = {
+                "result": 1
+            };
+
+        } catch (error) {
+            this.retrievedData = [{
+                "result": -1,
+                "message": "Error --> " + RouteInstance.url + " --> " + error
+            }];
+        }
+
+        return this.retrievedData;
+    }
+
+    // create follow up
+    async createFollowup(RouteInstance: IDRoute, CheckupInstance: TravellerCheckUp): Promise<any[]> {
+        if (CheckupInstance._traveller_id != "") {
+            try {
+
+                console.log(CheckupInstance._traveller_id)
+                // check if user exists
+                const traveller: any = await this.db.sequelize?.query(
+                    `SELECT * FROM "public"."travellers" WHERE "_id" = :travellerId;`,
+                    {
+                        replacements: { travellerId: CheckupInstance._traveller_id },
+                        type: QueryTypes.SELECT,
+                    }
+                );
+
+                if (traveller && traveller.length === 0) {
+                    this.retrievedData = [{
+                        "result": -1,
+                        "message": "Traveller not found"
+                    }];
+                } else {
+                    this.retrievedData = await this.db.sequelize?.query(
+                        `INSERT INTO public.traveller_follow_ups
+                    (_traveller_Id, doc) VALUES
+                    ('${CheckupInstance._traveller_id}', '${JSON.stringify(CheckupInstance.doc)}')
+                    RETURNING _id;`
+                    );
+
+                    const insertedId = this.retrievedData[0][0]._id;
+                    this.retrievedData[0] = {
+                        result: insertedId,
+                    };
+
+                    console.log("-->", this.retrievedData);
+                }
+            } catch (error) {
+                this.retrievedData = [{
+                    "result": -1,
+                    "message": "Error --> " + RouteInstance.url + " --> " + error
+                }];
+            }
+        } else {
+            this.retrievedData = [{
+                "result": -1,
+                "message": "Error --> Blank data"
+            }];
+        }
+
+        return this.retrievedData;
+    }
+
+    async getFollowup(RouteInstance: IDRoute, CheckupInstance: TravellerCheckUp): Promise<any[]> {
+        try {
+            this.retrievedData = await this.db.sequelize?.query(
+                `SELECT * FROM "public"."traveller_follow_ups"
+                WHERE "_traveller_id" = ` + CheckupInstance._traveller_id + `;`
             );
         } catch (error) {
             this.retrievedData = [{
