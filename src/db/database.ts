@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize-typescript";
-import { config, dialect} from "../config/db.config";
+import { config, dialect } from "../config/db.config";
 
 class Database {
   public sequelize: Sequelize | undefined;

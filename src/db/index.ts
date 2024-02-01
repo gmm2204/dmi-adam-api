@@ -1,11 +1,17 @@
 import { Sequelize } from "sequelize-typescript";
 import { config, dialect } from "../config/db.config";
+import CradleDatabase from "./CradleDatabase";
+import cradle from "cradle";
+import { cradle_config } from "../config/cradle.config";
 
 class Database {
   public sequelize: Sequelize | undefined;
+  public CradleDatabaseInstance: CradleDatabase | undefined;
+  public couch_database: cradle.Database | undefined;
 
   constructor() {
-    this.connectToDatabase();
+    // this.CradleDatabaseInstance = new CradleDatabase(cradle_config.DATABASE);
+    // this.connectToDatabase();
   }
 
   private async connectToDatabase() {

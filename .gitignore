@@ -7,3 +7,4 @@ src/config/db.config.ts
 .cheats
 Dockerfile
 .idea
+docs

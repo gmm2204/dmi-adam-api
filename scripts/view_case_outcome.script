@@ -1,0 +1,8 @@
+function(doc) {
+  if (doc.type === 'data_record' &&
+      doc.form === 'case_outcome' &&
+      doc.fields.co_laboratory.col_consented_information.col_rdt_results === 'pending') {
+    var value = typeof doc.reported_date === 'number' ? doc.reported_date : 0;
+    emit([doc.form, doc.contact.parent._id], value);
+  }
+}

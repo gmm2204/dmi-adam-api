@@ -1,0 +1,12 @@
+{
+    "routes": [
+        {
+            "title": "Acquire instance",
+            "url": "/acquire/instance"
+        },
+        {
+            "title": "Poll batch",
+            "url": "/results/poll"
+        }
+    ]
+}
